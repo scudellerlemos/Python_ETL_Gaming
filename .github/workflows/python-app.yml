@@ -3,18 +3,18 @@
 
 name: Python application
 
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  schedule:
+    - cron: '0 13 * * *' # runs at 13:00 UTC everyday
 
 permissions:
   contents: read
   
-on:
-  schedule:
-    - cron: '0 13 * * *' # runs at 12:00 UTC everyday
 
 jobs:
   build:
