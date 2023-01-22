@@ -1,7 +1,8 @@
 # %%
 import pandas as pd
 import requests as req
-from github import Github
+import os
+
 
 # %%
 #Pegar JSON FILE da FC
@@ -88,7 +89,14 @@ if len(lista_saiu)>0:
         response.json()   
 
 # %%
-g = Github("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")
+from github import Github
+
+g = Github(${{ secrets.GITHUB_TOKEN }})
+
+
+
+
+# %%
 
 repo = g.get_user().get_repo("App_usuarios_last_santd")
 all_files = []
