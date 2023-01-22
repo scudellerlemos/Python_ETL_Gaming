@@ -2,6 +2,7 @@
 import pandas as pd
 import requests as req
 import os
+from dotenv import load_dotenv
 
 
 # %%
@@ -10,10 +11,6 @@ def dados_FC():
     response = req.get("https://xivapi.com/freecompany/9234349560946634431?data=FCM")
     return response.json()
 
-
-#CHAVE DE ENTRADA DO USUARIO POSTAR NO DISCORD
-headers = {
-            'authorization':'MTgxMTQxOTc4NDI2MjQ1MTQx.GOknMc.Crpes8TnnWGWZUwldkd7BMxwwvz1aAAlXG6CUY'}
 
 # %%
 #Criação da tabela de membros de hoje
@@ -75,7 +72,7 @@ if len(lista_entrou)>0:
         payload = {
         'content': str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  entrou na fc."
         }
-        response = req.post(f"https://discord.com/api/v9/channels/1066456073504034966/messages",data=payload, headers=headers)
+        response = req.post(f"https://discord.com/api/v9/channels/1066456073504034966/messages",data=payload, headers={'authorization':os.getenv("chave_usuario_discord")})
         response.json()    
 
 # %%
@@ -85,17 +82,19 @@ if len(lista_saiu)>0:
         payload = {
         'content':str(dados_saiu["Name"][i]) +  "  (ID:"+ str(dados_saiu["ID"][i])+")  saiu da fc."
         }
-        response = req.post(f"https://discord.com/api/v9/channels/1066455910228164690/messages",data=payload, headers=headers)
+        response = req.post(f"https://discord.com/api/v9/channels/1066455910228164690/messages",data=payload, headers={'authorization':os.getenv("chave_usuario_discord")})
         response.json()   
+
+# %%
+print(os.getenv("chave_usuario_discord"))
+print(os.getenv("git_key"))
 
 # %%
 from github import Github
 
-g = Github(repo-token)
-
+g = Github(os.getenv("git_key"))
 
 # %%
-
 repo = g.get_user().get_repo("App_usuarios_last_santd")
 all_files = []
 contents = repo.get_contents("")
