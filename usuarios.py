@@ -91,9 +91,7 @@ if len(lista_saiu)>0:
 # %%
 from github import Github
 
-g = Github(${{ secrets.GITHUB_TOKEN }})
-
-
+g = Github(repo-token)
 
 
 # %%
