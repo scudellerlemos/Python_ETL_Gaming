@@ -32,7 +32,7 @@ jobs:
         pip install flake8 pytest
         pip install pandas
         pip install requests
-        pip install github
+        pip install Pygithub
         pip install python-dotenv
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
