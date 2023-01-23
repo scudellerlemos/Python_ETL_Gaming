@@ -40,7 +40,7 @@ jobs:
           pip install flake8 pytest
           pip install pandas
           pip install requests
-          pip install Pygithub
+          pip install boto3
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -50,7 +50,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run script
         env:
-          CHAVE_AMBIENTE: ${{secrets.CHAVE_AMBIENTE}} 
+          USER_ACC_DATA: ${{secrets.USER_ACC_DATA}}
+          USER_ACC_PASSWORD: ${{secrets.USER_ACC_PASSWORD}} 
         run: |
           python usuarios.py
 
