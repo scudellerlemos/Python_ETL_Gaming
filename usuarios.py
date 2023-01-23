@@ -2,10 +2,7 @@
 import pandas as pd
 import requests as req
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-git_key = os.getenv("git_key")
 
 
 #header
@@ -101,10 +98,7 @@ MEMBROS_FC_antes.to_csv("RAW_MEMBROS_BACKUP.csv")
 from github import Github
 
 g = Github(git_key)
-load_dotenv()
 
-chave_usuario_discord = os.getenv("chave_usuario_discord")
-git_key = os.getenv("git_key")
 
 # %%
 repo = g.get_user().get_repo("App_usuarios_last_santd")
