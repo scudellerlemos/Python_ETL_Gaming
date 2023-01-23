@@ -95,7 +95,7 @@ MEMBROS_FC_antes.to_csv("RAW_MEMBROS_BACKUP.csv")
 
 # %%
 from github import Github
-git_key=os.environ["TOKEN_GIT"]
+git_key=os.environ["CHAVE_AMBIENTE"]
 g = Github(git_key)
 
 
