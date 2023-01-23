@@ -2,17 +2,41 @@
 import pandas as pd
 import requests as req
 import os
+import boto3
+from io import StringIO
+from io import BytesIO
 
 
 #header
 header = {'authorization':"MTgxMTQxOTc4NDI2MjQ1MTQx.GVYK3q.h0foW84_xppMmm1xnBzWuWc-n6a2OH7ADGtzkg"}
 
+USER_ACC_DATA=os.environ["USER_ACC_DATA"]
+USER_ACC_PASSWORD=os.environ["USER_ACC_PASSWORD"]
 
 # %%
 #Pegar JSON FILE da FC
 def dados_FC():
     response = req.get("https://xivapi.com/freecompany/9234349560946634431?data=FCM")
     return response.json()
+
+
+#Fazer upload na S3 AWS
+def upload_s3(file,paste,bucket,df):
+    s3_file_key = str(paste)+"/"+str(file)
+    s3 = boto3.client("s3",aws_access_key_id=USER_ACC_DATA, aws_secret_access_key=USER_ACC_PASSWORD)
+    csv_buf = StringIO()
+    df.to_csv(csv_buf, header=True, index = False)
+    csv_buf.seek(0)
+    s3.put_object(Bucket=bucket,Body=csv_buf.getvalue(),Key=s3_file_key)
+
+##Ler  arquivo na S3 AWS
+def read_csv_s3(file,paste,bucket):
+    s3_file_key = str(paste)+"/"+str(file)
+    bucket = bucket
+    s3 = boto3.client("s3",aws_access_key_id=USER_ACC_DATA, aws_secret_access_key=USER_ACC_PASSWORD)
+    obj = s3.get_object(Bucket=bucket, Key=s3_file_key)
+    initial_df = pd.read_csv(BytesIO(obj['Body'].read()))
+    return initial_df
 
 
 # %%
@@ -23,9 +47,7 @@ MEMBROS_FC_DEPOIS.drop(["Lang","RankIcon","FeastMatches","Server"],axis = 1, inp
 
 # %%
 #Criação da tabela de ontem
-url = "https://raw.githubusercontent.com/scudellerlemos/App_usuarios_last_santd/main/Scripts/RAW_MEMBROS_BACKUP.csv"
-MEMBROS_FC_antes = pd.read_csv(url)
-MEMBROS_FC_antes.drop("Unnamed: 0",axis=1,inplace=True)
+MEMBROS_FC_antes=read_csv_s3("RAW_MEMBROS_BACKUP.csv","client","dataff")
 
 
 # %%
@@ -90,42 +112,6 @@ if len(lista_saiu)>0:
         response.json()   
 
 # %%
-MEMBROS_FC_antes = MEMBROS_FC_DEPOIS
-MEMBROS_FC_antes.to_csv("RAW_MEMBROS_BACKUP.csv")
-
-# %%
-from github import Github
-git_key=os.environ["CHAVE_AMBIENTE"]
-g = Github(git_key)
-
-
-# %%
-repo = g.get_user().get_repo("App_usuarios_last_santd")
-all_files = []
-contents = repo.get_contents("")
-while contents:
-    file_content = contents.pop(0)
-    if file_content.type == "dir":
-        contents.extend(repo.get_contents(file_content.path))
-    else:
-        file = file_content
-        all_files.append(str(file).replace('ContentFile(path="','').replace('")',''))
-
-file = open("RAW_MEMBROS_BACKUP.CSV")
-content = file.read()
-
-
-
-# %%
-# Upload to github
-git_prefix = 'Scripts/'
-git_file = git_prefix + 'RAW_MEMBROS_BACKUP.csv'
-if git_file in all_files:
-    contents = repo.get_contents(git_file)
-    repo.update_file(contents.path, "committing files", content, contents.sha, branch="main")
-    print(git_file + ' UPDATED')
-else:
-    repo.create_file(git_file, "committing files", content, branch="main")
-    print(git_file + ' CREATED')
+upload_s3("RAW_MEMBROS_BACKUP.csv","client","dataff",MEMBROS_FC_DEPOIS)
 
 
