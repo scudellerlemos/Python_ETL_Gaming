@@ -29,7 +29,6 @@ jobs:
       name: PRD
     needs: build
     steps:
-      - uses: actions/labeler@v4
       - uses: actions/checkout@v3
       - name: Set up Python 3.10
         uses: actions/setup-python@v3
@@ -42,7 +41,6 @@ jobs:
           pip install pandas
           pip install requests
           pip install Pygithub
-          pip install python-dotenv
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
@@ -51,6 +49,8 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run script
+        env:
+          TOKEN_GIT: ${{secrets.TOKEN_GIT}} 
         run: |
           python usuarios.py
 
