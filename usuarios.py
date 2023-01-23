@@ -4,7 +4,6 @@ import requests as req
 import os
 
 
-
 #header
 header = {'authorization':"MTgxMTQxOTc4NDI2MjQ1MTQx.GVYK3q.h0foW84_xppMmm1xnBzWuWc-n6a2OH7ADGtzkg"}
 
@@ -96,7 +95,7 @@ MEMBROS_FC_antes.to_csv("RAW_MEMBROS_BACKUP.csv")
 
 # %%
 from github import Github
-
+git_key=os.environ['repo-token']
 g = Github(git_key)
 
 
