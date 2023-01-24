@@ -7,6 +7,8 @@ from io import BytesIO
 from discord_webhook import DiscordWebhook
 from github import Github
 
+
+
 #chaves
 WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
 WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
