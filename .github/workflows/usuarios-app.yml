@@ -41,6 +41,7 @@ jobs:
           pip install requests
           pip install discord_webhook
           pip install boto3
+          
       - name: Run script
         env:
           AWS_ACC: ${{secrets.AWS_ACC}}
