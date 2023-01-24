@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+import os
+BOT_KEY=os.environ['BOT_KEY']
 
 bot= commands.Bot("!")
 
@@ -9,5 +11,5 @@ async def on_ready():
     print("Estou pronta!")
 
 
-bot.run("MTA2NzI4MjI1MjU5MTAyNjE3Nw.G2gIyO.Kfbm1Z1WFBA9FFRCvu95HY6o0TTa1tjzW0aKrM")
+bot.run(BOT_KEY)
 
