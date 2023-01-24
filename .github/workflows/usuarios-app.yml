@@ -40,6 +40,7 @@ jobs:
           pip install pandas
           pip install requests
           pip install boto3
+          pip install discord_webhook
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Run script
         env:
