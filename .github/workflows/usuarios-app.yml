@@ -40,7 +40,7 @@ jobs:
           pip install pandas
           pip install requests
           pip install discord_webhook
-          pip install pygithub
+          pip install boto3
       - name: Run script
         env:
           G_REPO: ${{secrets.G_REPO}}
