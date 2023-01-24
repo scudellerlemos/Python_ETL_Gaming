@@ -6,7 +6,7 @@ from io import StringIO
 from io import BytesIO
 from discord_webhook import DiscordWebhook
 from github import Github
-
+import boto3
 
 
 #chaves
@@ -21,6 +21,24 @@ def dados_FC():
     response = req.get("https://xivapi.com/freecompany/9234349560946634431?data=FCM")
     return response.json()
 
+#Fazer upload na S3 AWS
+def upload_s3(file,paste,bucket,df):
+    s3_file_key = str(paste)+"/"+str(file)
+    s3 = boto3.client("s3",aws_access_key_id=GITHUB_REPO, aws_secret_access_key=GITHUB_PASSWORD)
+    csv_buf = StringIO()
+    df.to_csv(csv_buf, header=True, index = False)
+    csv_buf.seek(0)
+    s3.put_object(Bucket=bucket,Body=csv_buf.getvalue(),Key=s3_file_key)
+
+##Ler  arquivo na S3 AWS
+def read_csv_s3(file,paste,bucket):
+    s3_file_key = str(paste)+"/"+str(file)
+    bucket = bucket
+    s3 = boto3.client("s3",aws_access_key_id=GITHUB_REPO, aws_secret_access_key=GITHUB_PASSWORD)
+    obj = s3.get_object(Bucket=bucket, Key=s3_file_key)
+    initial_df = pd.read_csv(BytesIO(obj['Body'].read()))
+    return initial_df
+
 
 # %%
 #Criação da tabela de membros de hoje
@@ -30,8 +48,7 @@ MEMBROS_FC_DEPOIS.drop(["Lang","RankIcon","FeastMatches","Server"],axis = 1, inp
 
 # %%
 #Criação da tabela de ontem
-url = "https://raw.githubusercontent.com/scudellerlemos/App_usuarios_last_santd/main/Scripts/RAW_MEMBROS_BACKUP.csv"
-MEMBROS_FC_antes = pd.read_csv(url)
+MEMBROS_FC_antes = read_csv_s3("RAW_MEMBROS_BACKUP.csv","client","dataff")
 
 
 # %%
@@ -88,40 +105,6 @@ if len(lista_saiu)>0:
         response = webhook.execute()   
 
 # %%
-#Fazendo login no git
-g = Github(GITHUB_PASSWORD)
-
-
-# %%
-#listando o repositorio
-repo = g.get_user().get_repo(GITHUB_REPO)
-all_files = []
-contents = repo.get_contents("")
-while contents:
-    file_content = contents.pop(0)
-    if file_content.type == "dir":
-        contents.extend(repo.get_contents(file_content.path))
-    else:
-        file = file_content
-        all_files.append(str(file).replace('ContentFile(path="','').replace('")',''))
-
-# %%
-#gerando conteudo do arquivo do df em csv, mas sem gerar o arquivo. É guardado o conteudo na variavel str chamada "content"
-csv_buf = StringIO()
-MEMBROS_FC_DEPOIS.to_csv(csv_buf, header=True, index = False)
-csv_buf.seek(0)
-content=csv_buf.getvalue()
-
-# %%
-# Upload para github
-git_prefix = 'Scripts/'
-git_file = git_prefix + 'RAW_MEMBROS_BACKUP.csv'
-if git_file in all_files:
-    contents = repo.get_contents(git_file)
-    repo.update_file(contents.path, "comitando arquivos", content, contents.sha, branch="main")
-    print(git_file + ' Atualizado')
-else:
-    repo.create_file(git_file, "comitando arquivos", content, branch="main")
-    print(git_file + ' Criado')
+upload_s3("RAW_MEMBROS_BACKUP.csv","client","dataff",MEMBROS_FC_DEPOIS)
 
 
