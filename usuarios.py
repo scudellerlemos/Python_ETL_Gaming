@@ -5,14 +5,15 @@ import os
 from io import StringIO
 from io import BytesIO
 from discord_webhook import DiscordWebhook
+from github import Github
 import boto3
 
 
 #chaves
 WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
 WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
-GITHUB_PASSWORD=os.environ["G_PASSWORD"]
-GITHUB_REPO=os.environ["G_REPO"]
+AWS_KEY=os.environ["AWS_KEY"]
+AWS_ACC=os.environ["AWS_ACC"]
 
 # %%
 #Pegar JSON FILE da FC
@@ -23,7 +24,7 @@ def dados_FC():
 #Fazer upload na S3 AWS
 def upload_s3(file,paste,bucket,df):
     s3_file_key = str(paste)+"/"+str(file)
-    s3 = boto3.client("s3",aws_access_key_id=GITHUB_REPO, aws_secret_access_key=GITHUB_PASSWORD)
+    s3 = boto3.client("s3",aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
     csv_buf = StringIO()
     df.to_csv(csv_buf, header=True, index = False)
     csv_buf.seek(0)
@@ -33,11 +34,10 @@ def upload_s3(file,paste,bucket,df):
 def read_csv_s3(file,paste,bucket):
     s3_file_key = str(paste)+"/"+str(file)
     bucket = bucket
-    s3 = boto3.client("s3",aws_access_key_id=GITHUB_REPO, aws_secret_access_key=GITHUB_PASSWORD)
+    s3 = boto3.client("s3",aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
     obj = s3.get_object(Bucket=bucket, Key=s3_file_key)
     initial_df = pd.read_csv(BytesIO(obj['Body'].read()))
     return initial_df
-
 
 # %%
 #Criação da tabela de membros de hoje
