@@ -45,7 +45,8 @@ jobs:
         env:
           USER_ACC_DATA: ${{secrets.USER_ACC_DATA}}
           USER_ACC_PASSWORD: ${{secrets.USER_ACC_PASSWORD}}
-          HEADERD_DISCORD: ${{secrets.HEADERD_DISCORD}} 
+          WEBHOOK_ENTROU_FC: ${{secrets.WEBHOOK_ENTROU_FC}} 
+          WEBHOOK_SAIU_FC: ${{secrets.WEBHOOK_SAIU_FC}} 
         run: |
           python usuarios.py
 
