@@ -5,14 +5,14 @@ import os
 import boto3
 from io import StringIO
 from io import BytesIO
+from discord_webhook import DiscordWebhook
+
 
 #chaves
-HEADER_DISCORD = os.environ["HEADERD_DISCORD"]
 USER_ACC_DATA=os.environ["USER_ACC_DATA"]
 USER_ACC_PASSWORD=os.environ["USER_ACC_PASSWORD"]
-
-
-header = {'authorization':HEADER_DISCORD}
+WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
+WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
 
 # %%
 #Pegar JSON FILE da FC
@@ -96,21 +96,15 @@ dados_saiu.reset_index(drop = True, inplace = True)
 #postagem das mensagens no discord
 if len(lista_entrou)>0:
     for i in range(0,len(lista_entrou)):
-        payload = {
-        'content': str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  entrou na fc."
-        }
-        response = req.post(f"https://discord.com/api/v9/channels/1066456073504034966/messages",data=payload, headers=header)
-        response.json()    
+        webhook = DiscordWebhook(url=WEBHOOK_ENTROU_FC, content=str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  entrou na fc.")
+        response = webhook.execute()  
 
 # %%
 ##postagem das mensagens no discord
 if len(lista_saiu)>0:
     for i in range(0,len(lista_saiu)):
-        payload = {
-        'content':str(dados_saiu["Name"][i]) +  "  (ID:"+ str(dados_saiu["ID"][i])+")  saiu da fc."
-        }
-        response = req.post(f"https://discord.com/api/v9/channels/1066455910228164690/messages",data=payload, headers=header)
-        response.json()   
+        webhook = DiscordWebhook(url=WEBHOOK_SAIU_FC, content=str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  saiu da fc.")
+        response = webhook.execute()   
 
 # %%
 upload_s3("RAW_MEMBROS_BACKUP.csv","client","dataff",MEMBROS_FC_DEPOIS)
