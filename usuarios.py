@@ -6,12 +6,13 @@ import boto3
 from io import StringIO
 from io import BytesIO
 
-
-#header
-header = {'authorization':"MTgxMTQxOTc4NDI2MjQ1MTQx.GVYK3q.h0foW84_xppMmm1xnBzWuWc-n6a2OH7ADGtzkg"}
-
+#chaves
+HEADER_DISCORD = os.environ["HEADERD_DISCORD"]
 USER_ACC_DATA=os.environ["USER_ACC_DATA"]
 USER_ACC_PASSWORD=os.environ["USER_ACC_PASSWORD"]
+
+
+header = {'authorization':HEADER_DISCORD}
 
 # %%
 #Pegar JSON FILE da FC
@@ -47,7 +48,7 @@ MEMBROS_FC_DEPOIS.drop(["Lang","RankIcon","FeastMatches","Server"],axis = 1, inp
 
 # %%
 #Criação da tabela de ontem
-MEMBROS_FC_antes=read_csv_s3("RAW_MEMBROS_BACKUP.csv","client","dataff")
+MEMBROS_FC_antes = read_csv_s3("RAW_MEMBROS_BACKUP.csv","client","dataff")
 
 
 # %%
@@ -59,14 +60,14 @@ Lista_membros_total = list(dict.fromkeys(Lista_membros_antes+Lista_membros_depoi
 
 # %%
 #Criação das listas das pessoas que entraram na FC ou sairam
-lista_entrou=[]
-lista_saiu=[]
-lista_lixo=[]
+lista_entrou = []
+lista_saiu = []
+lista_lixo = []
 for ID in Lista_membros_total:
     ##saiu
     if ID in Lista_membros_antes:
         if ID in Lista_membros_depois:
-            lista_lixo=[]
+            lista_lixo = []
         else:
             lista_saiu.append(ID)
     ##entrou
@@ -74,7 +75,7 @@ for ID in Lista_membros_total:
         if ID in Lista_membros_depois:
             lista_entrou.append(ID)
         else:
-            lista_lixo=[]
+            lista_lixo = []
 
 
 
