@@ -2,7 +2,6 @@
 import pandas as pd
 import requests as req
 import os
-import boto3
 from io import StringIO
 from io import BytesIO
 from discord_webhook import DiscordWebhook
