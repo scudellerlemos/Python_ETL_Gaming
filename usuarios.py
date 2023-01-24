@@ -11,8 +11,8 @@ from github import Github
 #chaves
 WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
 WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
-GITHUB_PASSWORD=os.environ["GITHUB_PASSWORD"]
-GITHUB_REPO=os.environ["GITHUB_REPO"]
+GITHUB_PASSWORD=os.environ["G_PASSWORD"]
+GITHUB_REPO=os.environ["G_REPO"]
 
 # %%
 #Pegar JSON FILE da FC
