@@ -44,7 +44,8 @@ jobs:
       - name: Run script
         env:
           USER_ACC_DATA: ${{secrets.USER_ACC_DATA}}
-          USER_ACC_PASSWORD: ${{secrets.USER_ACC_PASSWORD}} 
+          USER_ACC_PASSWORD: ${{secrets.USER_ACC_PASSWORD}}
+          HEADERD_DISCORD: ${{secrets.HEADERD_DISCORD}} 
         run: |
           python usuarios.py
 
