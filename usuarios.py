@@ -5,7 +5,6 @@ import os
 from io import StringIO
 from io import BytesIO
 from discord_webhook import DiscordWebhook
-from github import Github
 import boto3
 
 
