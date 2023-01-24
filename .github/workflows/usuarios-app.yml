@@ -43,8 +43,8 @@ jobs:
           pip install boto3
       - name: Run script
         env:
-          G_REPO: ${{secrets.G_REPO}}
-          G_PASSWORD: ${{secrets.G_PASSWORD}}
+          AWS_ACC: ${{secrets.AWS_ACC}}
+          AWS_KEY: ${{secrets.AWS_KEY}}
           WEBHOOK_ENTROU_FC: ${{secrets.WEBHOOK_ENTROU_FC}} 
           WEBHOOK_SAIU_FC: ${{secrets.WEBHOOK_SAIU_FC}} 
         run: |
