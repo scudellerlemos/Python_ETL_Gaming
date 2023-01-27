@@ -23,7 +23,7 @@ jobs:
     - name: Mensagem inicial
       run : echo Iniciando job em python!
  
-  deploy-PRD:
+  deploy-PRD_script2:
     runs-on: ubuntu-latest
     environment:
       name: PRD
