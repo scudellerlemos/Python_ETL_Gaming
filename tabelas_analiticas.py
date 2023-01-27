@@ -9,6 +9,7 @@ import boto3
 import datetime as date
 import numpy as np
 
+
 #chaves
 AWS_KEY=os.environ["AWS_KEY"]
 AWS_ACC=os.environ["AWS_ACC"]
@@ -255,7 +256,60 @@ ANALYTICS_DISCORD["Data_entrada"] =  pd.to_datetime(ANALYTICS_DISCORD["Data_entr
 ANALYTICS_DISCORD["Data_saida"] =  pd.to_datetime(ANALYTICS_DISCORD["Data_saida"])
 
 # %%
-#Criação da tabela de analytics
+#upload to S3
 upload_s3("ANALYTICS_DISCORD_HISTORY.csv","client","dataff",ANALYTICS_DISCORD)
+
+# %%
+#ler tabela fato
+FATO_MEMBROS = read_csv_s3("FATO_MEMBROS_FC.csv","client","dataff")
+
+# %%
+#Leitura da tabela do discord
+DISCORD = read_csv_s3("ANALYTICS_DISCORD_HISTORY.csv","client","dataff")
+DISCORD = DISCORD[pd.isnull(DISCORD["Data_saida"])]
+
+sup = list(DISCORD.columns)
+sup[sup.index("id")]="ID"
+DISCORD.columns = sup
+
+# %%
+#Filtros na tabela ClassJobs (LVL =90 e tem que ser Healer, Tank ou DPS)
+CLASSJOBS = read_csv_s3("ANALYTICS_ClassJobs.csv","client","dataff")
+CLASSJOBS = CLASSJOBS.query('Level ==90 & (Tipo_role == "HLR"  | Tipo_role == "TNK"  | Tipo_role == "DPS")')
+CLASSJOBS = CLASSJOBS.groupby(["ID"]).agg({"Tipo_role":"count","Qtd_jobs":"sum"}).reset_index()
+
+#join realizados para criação da tabela PROD_GERAL
+ANALYTIC_GERAL = FATO_MEMBROS.merge(CLASSJOBS,how="left",on="ID")
+ANALYTIC_GERAL = ANALYTIC_GERAL.merge(DISCORD,how="left",on="ID")
+
+# %%
+#Regras de cargos da FC
+BATIDINHA = np.logical_and(np.logical_and(np.logical_and(ANALYTIC_GERAL["Qtd_dias"]>30,ANALYTIC_GERAL["Qtd_dias"]<60),ANALYTIC_GERAL["Tipo_role"]>=1),ANALYTIC_GERAL["Qtd_jobs"]>=1)
+CERVEJA = np.logical_and(np.logical_and(ANALYTIC_GERAL["Qtd_dias"]>=60,ANALYTIC_GERAL["Tipo_role"]>=2),ANALYTIC_GERAL["Qtd_jobs"]>=2)
+COPO = np.logical_or(pd.isnull(ANALYTIC_GERAL["Tipo_role"])==True,ANALYTIC_GERAL["Qtd_dias"]<=30)
+
+# %%
+ANALYTIC_GERAL["Rank_recomendado"] = float("NaN")
+
+for i in range(0,ANALYTIC_GERAL["ID"].count()):
+    if BATIDINHA[i] ==True:
+        ANALYTIC_GERAL["Rank_recomendado"][i] = "Batidinha"
+    if CERVEJA[i] ==True:
+        ANALYTIC_GERAL["Rank_recomendado"][i] = "Cerveja"
+    if COPO[i] ==True:
+        ANALYTIC_GERAL["Rank_recomendado"][i] = "Copo"
+
+
+ANALYTIC_GERAL.drop(["Name_y","Lodestone","Data_saida"],axis=1,inplace=True)
+
+ANALYTIC_GERAL.columns
+ANALYTIC_GERAL=ANALYTIC_GERAL[["ID","Avatar","Name_x","Rank","Rank_recomendado","Data_entrada","Qtd_dias","Tipo_role"]]
+
+sup = list(ANALYTIC_GERAL)
+sup[sup.index("Name_x")]="Name"
+sup[sup.index("Tipo_role")]="Qtd_role_jobs"
+ANALYTIC_GERAL.columns = sup
+
+upload_s3("ANALYTIC_GERAL.csv","client","dataff",ANALYTIC_GERAL)
 
 
