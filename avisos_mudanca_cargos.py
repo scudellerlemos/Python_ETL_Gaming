@@ -6,8 +6,7 @@ from io import StringIO
 from io import BytesIO
 from discord_webhook import DiscordWebhook, DiscordEmbed
 import boto3
-import datetime as date
-import numpy as np
+
 
 #chaves
 WEBHOOK_REGRAS_CARGOS=os.environ["WEBHOOK_REGRAS_CARGOS"]
@@ -33,24 +32,22 @@ def read_csv_s3(file,paste,bucket):
     initial_df = pd.read_csv(BytesIO(obj['Body'].read()))
     return initial_df
 
+# %%
+PROD_CARGOS = read_csv_s3("PROD_CARGOS.csv","client","dataff")
 
 # %%
-#Criação da Tabela de PROD CARGOS
-ANALYTIC_GERAL= read_csv_s3("ANALYTIC_GERAL.csv","client","dataff")
-membros_diff = ANALYTIC_GERAL["Rank"] != ANALYTIC_GERAL["Rank_recomendado"]
-PROD_CARGOS = ANALYTIC_GERAL[membros_diff]
-
-# %%
-PROD_CARGOS["Rank"].replace("Blue Label",float("NaN"),inplace=True)
-PROD_CARGOS["Rank"].replace("Platinum Label",float("NaN"),inplace=True)
-PROD_CARGOS["Rank"].replace("Gold Label",float("NaN"),inplace=True)
-PROD_CARGOS["Rank"].replace("Black Label",float("NaN"),inplace=True)
-PROD_CARGOS["Rank"].replace("Red Label",float("NaN"),inplace=True)
-PROD_CARGOS["Rank"].replace("Cerveja",float("NaN"),inplace=True)
-PROD_CARGOS = PROD_CARGOS.dropna(subset=["Rank_recomendado","Rank"])
-
-PROD_CARGOS.reset_index(drop=True,inplace=True)
-upload_s3("PROD_CARGOS.csv","client","dataff",PROD_CARGOS)
+webin = DiscordWebhook(url=WEBHOOK_REGRAS_CARGOS)
+embed = DiscordEmbed(title='Alteração de Cargos', description='Estas são as pessoas que merecem nossa atenção para alteração de cargo no FF XIV.  (Alterar SOMENTE no jogo!!!)', color='ffa1b3')
+embed.set_author(
+    name="Gaj Shield",
+    url="https://na.finalfantasyxiv.com/lodestone/character/31418891/",
+    icon_url="https://img2.finalfantasyxiv.com/f/a331cfa93a83a2a0fcfc9fb0d9bf0e73_be20385e18333edb329d4574f364a1f0fc0_96x96.jpg?1674791220",
+    )
+embed.set_timestamp()
+for i in range(0,PROD_CARGOS["Rank"].count()):
+    embed.add_embed_field(name=str(PROD_CARGOS["Name"][i]), value="Alterar cargo "+ "**"+str(PROD_CARGOS["Rank"][i]) + "**"+ " para "+ "**"+str(PROD_CARGOS["Rank_recomendado"][i])+ "**" , inline=False)
+webin.add_embed(embed)
+response = webin.execute()
 
 
 
