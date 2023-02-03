@@ -4,13 +4,9 @@ import requests as req
 import os
 from io import StringIO
 from io import BytesIO
-from discord_webhook import DiscordWebhook, DiscordEmbed
 import boto3
-import datetime as date
-import numpy as np
 
 #chaves
-WEBHOOK_REGRAS_CARGOS=os.environ["WEBHOOK_REGRAS_CARGOS"]
 AWS_KEY=os.environ["AWS_KEY"]
 AWS_ACC=os.environ["AWS_ACC"]
 
