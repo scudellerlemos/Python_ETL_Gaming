@@ -4,7 +4,14 @@ import requests as req
 import os
 from io import StringIO
 from io import BytesIO
+from discord_webhook import DiscordWebhook
 import boto3
+import datetime as date
+import numpy as np
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #chaves
 AWS_KEY=os.environ["AWS_KEY"]
@@ -43,10 +50,10 @@ PROD_CARGOS["Rank"].replace("Gold Label",float("NaN"),inplace=True)
 PROD_CARGOS["Rank"].replace("Black Label",float("NaN"),inplace=True)
 PROD_CARGOS["Rank"].replace("Red Label",float("NaN"),inplace=True)
 PROD_CARGOS["Rank"].replace("Cerveja",float("NaN"),inplace=True)
+PROD_CARGOS["Rank"].replace("Caipirinha",float("NaN"),inplace=True)
 PROD_CARGOS = PROD_CARGOS.dropna(subset=["Rank_recomendado","Rank"])
 
-PROD_CARGOS.reset_index(drop=True,inplace=True)
-upload_s3("PROD_CARGOS.csv","client","dataff",PROD_CARGOS)
 
+upload_s3("PROD_CARGOS.csv","client","dataff",PROD_CARGOS)
 
 

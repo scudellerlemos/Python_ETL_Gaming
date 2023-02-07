@@ -7,7 +7,6 @@ from io import BytesIO
 from discord_webhook import DiscordWebhook, DiscordEmbed
 import boto3
 
-
 #chaves
 WEBHOOK_REGRAS_CARGOS=os.environ["WEBHOOK_REGRAS_CARGOS"]
 AWS_KEY=os.environ["AWS_KEY"]
@@ -36,18 +35,19 @@ def read_csv_s3(file,paste,bucket):
 PROD_CARGOS = read_csv_s3("PROD_CARGOS.csv","client","dataff")
 
 # %%
-webin = DiscordWebhook(url=WEBHOOK_REGRAS_CARGOS)
-embed = DiscordEmbed(title='Alteração de Cargos', description='Estas são as pessoas que merecem nossa atenção para alteração de cargo no FF XIV.  (Alterar SOMENTE no jogo!!!)', color='ffa1b3')
-embed.set_author(
-    name="Gaj Shield",
-    url="https://na.finalfantasyxiv.com/lodestone/character/31418891/",
-    icon_url="https://img2.finalfantasyxiv.com/f/a331cfa93a83a2a0fcfc9fb0d9bf0e73_be20385e18333edb329d4574f364a1f0fc0_96x96.jpg?1674791220",
-    )
-embed.set_timestamp()
-for i in range(0,PROD_CARGOS["Rank"].count()):
-    embed.add_embed_field(name=str(PROD_CARGOS["Name"][i]), value="Alterar cargo "+ "**"+str(PROD_CARGOS["Rank"][i]) + "**"+ " para "+ "**"+str(PROD_CARGOS["Rank_recomendado"][i])+ "**" , inline=False)
-webin.add_embed(embed)
-response = webin.execute()
+if (PROD_CARGOS["Rank"].count()>0):
+    webin = DiscordWebhook(url=WEBHOOK_REGRAS_CARGOS)
+    embed = DiscordEmbed(title='Alteração de Cargos', description='Estas são as pessoas que merecem nossa atenção para alteração de cargo no FF XIV.  (Alterar SOMENTE no jogo!!!)', color='ffa1b3')
+    embed.set_author(
+        name="Gaj Shield",
+        url="https://na.finalfantasyxiv.com/lodestone/character/31418891/",
+        icon_url="https://img2.finalfantasyxiv.com/f/a331cfa93a83a2a0fcfc9fb0d9bf0e73_be20385e18333edb329d4574f364a1f0fc0_96x96.jpg?1674791220",
+        )
+    embed.set_timestamp()
+    for i in range(0,PROD_CARGOS["Rank"].count()):
+        embed.add_embed_field(name=str(PROD_CARGOS["Name"][i]), value="Alterar cargo "+ "**"+str(PROD_CARGOS["Rank"][i]) + "**"+ " para "+ "**"+str(PROD_CARGOS["Rank_recomendado"][i])+ "**" , inline=False)
+    webin.add_embed(embed)
+    response = webin.execute()
 
 
 
