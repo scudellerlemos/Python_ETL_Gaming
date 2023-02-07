@@ -7,7 +7,6 @@ from io import BytesIO
 from discord_webhook import DiscordWebhook
 import boto3
 
-
 #chaves
 WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
 WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
@@ -87,7 +86,6 @@ dados_saiu=dados[dados['ID'].isin(lista_saiu)]
 dados_entrou.reset_index(drop = True, inplace = True)
 dados_saiu.reset_index(drop = True, inplace = True)
 
-
 # %%
 #postagem das mensagens no discord
 if len(lista_entrou)>0:
@@ -99,8 +97,8 @@ if len(lista_entrou)>0:
 ##postagem das mensagens no discord
 if len(lista_saiu)>0:
     for i in range(0,len(lista_saiu)):
-        webhook = DiscordWebhook(url=WEBHOOK_SAIU_FC, content=str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  saiu da fc.")
-        response = webhook.execute()   
+        webhook = DiscordWebhook(url=WEBHOOK_SAIU_FC, content=str(dados_saiu["Name"][i]) +  "  (ID:"+ str(dados_saiu["ID"][i])+")  saiu da fc.")
+        response = webhook.execute()  
 
 # %%
 upload_s3("RAW_MEMBROS_BACKUP.csv","client","dataff",MEMBROS_FC_DEPOIS)
