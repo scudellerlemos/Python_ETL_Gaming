@@ -9,9 +9,6 @@ import boto3
 import datetime as date
 import numpy as np
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 #chaves
 AWS_KEY=os.environ["AWS_KEY"]
