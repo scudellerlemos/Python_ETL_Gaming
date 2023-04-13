@@ -4,6 +4,7 @@ import requests as req
 import os
 from io import StringIO
 from io import BytesIO
+from discord_webhook import DiscordWebhook
 import boto3
 import datetime as date
 import numpy as np
