@@ -42,6 +42,7 @@ jobs:
           pip install boto3
           pip install datetime
           pip install numpy
+          pip install discord_webhook
           
       - name: Run script
         env:
