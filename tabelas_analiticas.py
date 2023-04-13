@@ -4,6 +4,7 @@ import requests as req
 import os
 from io import StringIO
 from io import BytesIO
+from discord_webhook import DiscordWebhook
 import boto3
 import datetime as date
 import numpy as np
@@ -134,125 +135,18 @@ ANALYTICS_DISCORD.columns = sup
 
 
 # %%
-#tratamendo de execessão, já existia uma tabela que não era atualizada regularmente e estava muito mal formatada
-#foi uma decisão de trazer direto gravado do código ao inves de puxar o dataframe
-for i in range(0,ANALYTICS_DISCORD["ID"].count()):
-     if ANALYTICS_DISCORD["ID"][i] == "31418891":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "35516426":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "26767915":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "20959401":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "15475876":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "12831963":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "34960569":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "36626206":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-     if ANALYTICS_DISCORD["ID"][i] == "36789814":
-          ANALYTICS_DISCORD["data"][i] = "2022-11-30"
-
-     if ANALYTICS_DISCORD["ID"][i] == "23359227":
-          ANALYTICS_DISCORD["data"][i] = "2022-12-12"    
-     if ANALYTICS_DISCORD["ID"][i] == "38653854":
-          ANALYTICS_DISCORD["data"][i] = "2022-12-12"
-     if ANALYTICS_DISCORD["ID"][i] == "45979075":
-          ANALYTICS_DISCORD["data"][i] = "2022-12-12"
-     if ANALYTICS_DISCORD["ID"][i] == "16733417":
-          ANALYTICS_DISCORD["data"][i] = "2023-01-10"
-     if ANALYTICS_DISCORD["ID"][i] == "30916698":
-          ANALYTICS_DISCORD["data"][i] = "2022-12-06"
-     if ANALYTICS_DISCORD["ID"][i] == "4994762":
-          ANALYTICS_DISCORD["data"][i] = "2022-12-06"
-     if ANALYTICS_DISCORD["ID"][i] == "14952764":
-          ANALYTICS_DISCORD["data"][i] = "2023-01-18"
-ANALYTICS_DISCORD=ANALYTICS_DISCORD.append({"data":"2023-01-11","Name":"Ca'leof Kael  ","ID":"14952764","Status_entrada_saida":"saiu"},ignore_index=True)
-ANALYTICS_DISCORD=ANALYTICS_DISCORD.append({"data":"2023-01-17","Name":"Ca'leof Kael  ","ID":"14952764","Status_entrada_saida":"entrou"},ignore_index=True)
-ANALYTICS_DISCORD = ANALYTICS_DISCORD.sort_values(by="data")
-ANALYTICS_DISCORD = ANALYTICS_DISCORD.reset_index()
-
-# %%
-###Inicio da pivotação da coluna de Status_entrada e saida para Data_entrada e Data_saida
-ANALYTICS_DISCORD['data']=pd.to_datetime(ANALYTICS_DISCORD["data"])
-
-
-ANALYTICS_DISCORD["Entrou_saiu_2chave"] = float("NaN")
-ANALYTICS_DISCORD["Entrou_saiu_3chave"] = float("NaN")
-for x in list(ANALYTICS_DISCORD["Name"].unique()):
-    sup = 1
-    for y in list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x].reset_index()["index"]):
-        if ANALYTICS_DISCORD["Status_entrada_saida"][y]== "entrou":
-            sup+=1
-        ANALYTICS_DISCORD["Entrou_saiu_2chave"][y]= sup
-
-    for y in range(0, ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"].count()):
-        try:
-           if (ANALYTICS_DISCORD["Status_entrada_saida"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"])[y]] + ANALYTICS_DISCORD["Status_entrada_saida"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x].reset_index()["index"])[y-1]] + ANALYTICS_DISCORD["Status_entrada_saida"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"])[y+1]]) == "saiusaiuentrou":
-               ANALYTICS_DISCORD["Entrou_saiu_3chave"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"])[y]] = "nok"
-           else:
-               ANALYTICS_DISCORD["Entrou_saiu_3chave"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"])[y]] = "ok"
-        except:
-           ANALYTICS_DISCORD["Entrou_saiu_3chave"][list(ANALYTICS_DISCORD.loc[ANALYTICS_DISCORD["Name"]== x ].reset_index()["index"])[y]] = "ok"
-
-
-
-join_de_para = pd.DataFrame([])
-join_de_para["id"] = ANALYTICS_DISCORD["ID"].unique()
-join_de_para["Name"] = ANALYTICS_DISCORD["Name"].unique()
-
-
-
-ANALYTICS_DISCORD = ANALYTICS_DISCORD.pivot(index=["Name","Entrou_saiu_2chave","Entrou_saiu_3chave"], columns="Status_entrada_saida",values="data").reset_index()
-
-
-ANALYTICS_DISCORD = ANALYTICS_DISCORD.merge(join_de_para, how = "left", on= "Name")
-
-ANALYTICS_DISCORD.drop(["Entrou_saiu_2chave","Entrou_saiu_3chave"],axis= 1, inplace=True)
 sup = list(ANALYTICS_DISCORD.columns)
-sup[1] = "Data_entrada"
-sup[sup.index("saiu")] = "Data_saida"
+sup[sup.index("data")] = "Data_entrada"
 ANALYTICS_DISCORD.columns = sup
-
-for i in range(0,ANALYTICS_DISCORD["id"].count()):
-    if pd.isnull(ANALYTICS_DISCORD["Data_entrada"][i])==True:
-        ANALYTICS_DISCORD["Data_entrada"][i] = ANALYTICS_DISCORD["entrou"][i]
-
-ANALYTICS_DISCORD.drop("entrou", axis =1 , inplace = True)
-
-# %%
-##Filtros em boll para condições abaixo
-not_null_data_entrada = pd.isnull(ANALYTICS_DISCORD["Data_entrada"])==False
-null_data_entrada = pd.isnull(ANALYTICS_DISCORD["Data_entrada"])==True
-not_null_data_saida = pd.isnull(ANALYTICS_DISCORD["Data_saida"])==False
-null_data_saida = pd.isnull(ANALYTICS_DISCORD["Data_saida"])==True
 
 # %%
 #calculos de dias se a pessoa está presente no grupo
 ANALYTICS_DISCORD["Qtd_dias"]=float("NaN")
 x=0
-for x in range (x,ANALYTICS_DISCORD["id"].count()):
-    if np.logical_and(not_null_data_entrada[x], null_data_saida[x])==True:
-        sup = pd.Series([], dtype="object")
-        sup[x] = (date.datetime.today() - ANALYTICS_DISCORD["Data_entrada"][x])
-        ANALYTICS_DISCORD["Qtd_dias"][x] = sup.dt.components.days
-
-# %%
-#calculos de dias se a pessoa já saiu do grupo
-x=0
-ANALYTICS_DISCORD["Data_saida"] =  ANALYTICS_DISCORD["Data_saida"].astype(str)
-ANALYTICS_DISCORD["Data_entrada"] =  ANALYTICS_DISCORD["Data_entrada"].astype(str)
-for x in range (x,ANALYTICS_DISCORD["id"].count()):
-    if np.logical_and(not_null_data_entrada[x], not_null_data_saida[x])==True:
-        sup = pd.Series([], dtype="object")
-        sup[x] = (date.datetime.strptime(ANALYTICS_DISCORD["Data_saida"][x],'%Y-%m-%d') - date.datetime.strptime(ANALYTICS_DISCORD["Data_entrada"][x],'%Y-%m-%d'))
-        ANALYTICS_DISCORD["Qtd_dias"][x] = sup.dt.components.days
-
-ANALYTICS_DISCORD["Data_entrada"] =  pd.to_datetime(ANALYTICS_DISCORD["Data_entrada"])
-ANALYTICS_DISCORD["Data_saida"] =  pd.to_datetime(ANALYTICS_DISCORD["Data_saida"])
+for x in range (x,ANALYTICS_DISCORD["ID"].count()):
+    sup = pd.Series([], dtype="object")
+    sup[x] = (date.datetime.today() - date.datetime.strptime(ANALYTICS_DISCORD["Data_entrada"][x],'%Y-%m-%d'))
+    ANALYTICS_DISCORD["Qtd_dias"][x] = sup.dt.components.days
 
 # %%
 #upload to S3
@@ -265,11 +159,6 @@ FATO_MEMBROS = read_csv_s3("FATO_MEMBROS_FC.csv","client","dataff")
 # %%
 #Leitura da tabela do discord
 DISCORD = read_csv_s3("ANALYTICS_DISCORD_HISTORY.csv","client","dataff")
-DISCORD = DISCORD[pd.isnull(DISCORD["Data_saida"])]
-
-sup = list(DISCORD.columns)
-sup[sup.index("id")]="ID"
-DISCORD.columns = sup
 
 # %%
 #Filtros na tabela ClassJobs (LVL =90 e tem que ser Healer, Tank ou DPS)
@@ -299,7 +188,7 @@ for i in range(0,ANALYTIC_GERAL["ID"].count()):
         ANALYTIC_GERAL["Rank_recomendado"][i] = "Copo"
 
 
-ANALYTIC_GERAL.drop(["Name_y","Lodestone","Data_saida"],axis=1,inplace=True)
+ANALYTIC_GERAL.drop(["Name_y","Lodestone"],axis=1,inplace=True)
 
 ANALYTIC_GERAL.columns
 ANALYTIC_GERAL=ANALYTIC_GERAL[["ID","Avatar","Name_x","Rank","Rank_recomendado","Data_entrada","Qtd_dias","Tipo_role"]]
