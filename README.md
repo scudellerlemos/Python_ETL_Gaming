@@ -28,8 +28,5 @@ Os dados brutos são armazenados na S3 bucket da AWS. Notificações sobre o pro
 3. Personalize o código para atender às suas necessidades específicas.
 4. Execute o aplicativo de acordo com o agendamento desejado.
 
-## Contato
-
-Para mais informações ou dúvidas, entre em contato através do [seu_email@example.com](mailto:seu_email@example.com).
 
 Aproveite e utilize este aplicativo para automatizar e simplificar suas tarefas de ETL com facilidade e eficiência!
