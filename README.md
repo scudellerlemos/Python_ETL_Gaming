@@ -19,7 +19,7 @@ Os dados brutos são armazenados na S3 bucket da AWS. Notificações sobre o pro
 
 ## Produto final
  - Relatorio sobre quem saiu e entrou da free company (guilda)
- - Relatorio sobre os membros que precisam ter os cargos alterados da free company (favor adaptar o codigo a regra utilizada na sua free company)
+ - Relatorio sobre os membros que precisam ter os cargos alterados da guilda - free company (favor adaptar o codigo a regra utilizada na sua free company)
 
 ## Como Usar
 
