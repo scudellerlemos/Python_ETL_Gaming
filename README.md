@@ -10,7 +10,7 @@ Ele utiliza a infraestrutura da AWS para armazenar informações e enviar notifi
 - Extração, transformação e carga de dados.
 - Consumo de dados da API [xivapi.com](https://xivapi.com).
 - Divisão dos dados em três camadas: bruta, analítica e refinada.
-- Arquitetura gratuita, utilizando a S3 bucket da AWS no free tier e servidores GitHub Actions.
+- Arquitetura gratuita, utilizando a S3 bucket da AWS no free tier.
 
 ## Como Funciona
 
