@@ -29,4 +29,9 @@ jobs:
         pip install -r requirements.txt
     - name: Use Script
       run: |
-        tabela_usuarios.py "${{ secrets.AWS_ACC }}"  "${{ secrets.AWS_KEY }}"  "${{ secrets.WEBHOOK_ENTROU_FC }}" "${{ secrets.WEBHOOK_SAIU_FC }}"
+        python tabela_usuarios.py
+      env:
+        AWS_ACC: ${{ secrets.AWS_ACC }}
+        AWS_KEY: ${{ secrets.AWS_KEY }}
+        WEBHOOK_ENTROU_FC: ${{ secrets.WEBHOOK_ENTROU_FC }}
+        WEBHOOK_SAIU_FC: ${{ secrets.WEBHOOK_SAIU_FC }}
