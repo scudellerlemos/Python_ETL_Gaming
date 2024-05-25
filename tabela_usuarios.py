@@ -2,105 +2,99 @@
 import pandas as pd
 import requests as req
 import os
-from io import StringIO
-from io import BytesIO
+from io import StringIO, BytesIO
 from discord_webhook import DiscordWebhook
 import boto3
-
-#chaves
-WEBHOOK_SAIU_FC=os.environ["WEBHOOK_SAIU_FC"]
-WEBHOOK_ENTROU_FC=os.environ["WEBHOOK_ENTROU_FC"]
-AWS_KEY=os.environ["AWS_KEY"]
-AWS_ACC=os.environ["AWS_ACC"]
+from bs4 import BeautifulSoup
 
 # %%
-#Pegar JSON FILE da FC
+# Chaves
+AWS_KEY = os.environ["AWS_KEY"]
+AWS_ACC = os.environ["AWS_ACC"]
+WEBHOOK_SAIU_FC = os.environ["WEBHOOK_SAIU_FC"]
+WEBHOOK_ENTROU_FC = os.environ["WEBHOOK_ENTROU_FC"]
+
+# Função para pegar JSON FILE da FC
 def dados_FC():
-    response = req.get("https://xivapi.com/freecompany/9234349560946634431?data=FCM")
-    return response.json()
+    # URL da página de membros da Free Company
+    url = "https://na.finalfantasyxiv.com/lodestone/freecompany/9234349560946634431/member/"
 
-#Fazer upload na S3 AWS
-def upload_s3(file,paste,bucket,df):
-    s3_file_key = str(paste)+"/"+str(file)
-    s3 = boto3.client("s3",aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
+    # Fazer a solicitação HTTP para obter o conteúdo da página
+    response = req.get(url)
+    response.raise_for_status()  # Verifica se a solicitação foi bem-sucedida
+
+    # Analisar o conteúdo HTML da página
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    # Encontrar os membros na página
+    members = []
+    member_list = soup.find_all('div', class_='entry__freecompany__center')
+
+    for member in member_list:
+        name_tag = member.find('p', class_='entry__name')
+        if name_tag:
+            # Usando .string para acessar o texto dentro da tag
+            name = name_tag.string.strip()
+            members.append({'Name': name})
+    return members
+
+# Função para fazer upload no S3 AWS
+def upload_s3(file, paste, bucket, df):
+    s3_file_key = f"{paste}/{file}"
+    s3 = boto3.client("s3", aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
     csv_buf = StringIO()
-    df.to_csv(csv_buf, header=True, index = False)
+    df.to_csv(csv_buf, header=True, index=False)
     csv_buf.seek(0)
-    s3.put_object(Bucket=bucket,Body=csv_buf.getvalue(),Key=s3_file_key)
+    s3.put_object(Bucket=bucket, Body=csv_buf.getvalue(), Key=s3_file_key)
 
-##Ler  arquivo na S3 AWS
-def read_csv_s3(file,paste,bucket):
-    s3_file_key = str(paste)+"/"+str(file)
-    bucket = bucket
-    s3 = boto3.client("s3",aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
+# Função para ler arquivo do S3 AWS
+def read_csv_s3(file, paste, bucket):
+    s3_file_key = f"{paste}/{file}"
+    s3 = boto3.client("s3", aws_access_key_id=AWS_ACC, aws_secret_access_key=AWS_KEY)
     obj = s3.get_object(Bucket=bucket, Key=s3_file_key)
     initial_df = pd.read_csv(BytesIO(obj['Body'].read()))
     return initial_df
 
-# %%
-#Criação da tabela de membros de hoje
-MEMBROS_FC_DEPOIS = pd.DataFrame(dados_FC()["FreeCompanyMembers"])
-MEMBROS_FC_DEPOIS.drop(["Lang","RankIcon","FeastMatches","Server"],axis = 1, inplace = True)
-
-
-# %%
-#Criação da tabela de ontem
-MEMBROS_FC_antes = read_csv_s3("RAW_MEMBROS_BACKUP.csv","client","dataff")
-
+# Função para enviar mensagens ao Discord
+def send_discord_message(url, message):
+        webhook = DiscordWebhook(url=url, content=message)
+        response = webhook.execute()
 
 # %%
-#Listas com os IDs das tabelas
-Lista_membros_depois = list(MEMBROS_FC_DEPOIS["ID"])
-Lista_membros_antes = list(MEMBROS_FC_antes["ID"])
-Lista_membros_total = list(dict.fromkeys(Lista_membros_antes+Lista_membros_depois))
+# Obtenção dos dados atuais da FC
+dados_atual = dados_FC()
+dados_membros_df = pd.DataFrame(dados_atual)
+
+# %%
+dados_membros_df = pd.DataFrame(dados_membros_df)
+
+# Criação da tabela de ontem
+MEMBROS_FC_antes = read_csv_s3("RAW_MEMBROS_BACKUP.csv", "tabela_usuarios", "datafcgamingffxiv")
+
+# Criação das listas das pessoas que entraram na FC ou saíram
+lista_entrou = list(set(dados_membros_df['Name']) - set(MEMBROS_FC_antes['Name']))
+lista_saiu = list(set(MEMBROS_FC_antes['Name']) - set(dados_membros_df['Name']))
+
+# Criação dos dataframes de quem entrou e saiu
+dados = pd.concat([dados_membros_df, MEMBROS_FC_antes], ignore_index=True).drop_duplicates(subset=["Name"])
+dados_entrou = dados[dados['Name'].isin(lista_entrou)]
+dados_saiu = dados[dados['Name'].isin(lista_saiu)]
+
+# Reset index dos dataframes
+dados_entrou.reset_index(drop=True, inplace=True)
+dados_saiu.reset_index(drop=True, inplace=True)
 
 
 # %%
-#Criação das listas das pessoas que entraram na FC ou sairam
-lista_entrou = []
-lista_saiu = []
-lista_lixo = []
-for ID in Lista_membros_total:
-    ##saiu
-    if ID in Lista_membros_antes:
-        if ID in Lista_membros_depois:
-            lista_lixo = []
-        else:
-            lista_saiu.append(ID)
-    ##entrou
-    else:
-        if ID in Lista_membros_depois:
-            lista_entrou.append(ID)
-        else:
-            lista_lixo = []
+# Upload do novo arquivo para o S3
+upload_s3("RAW_MEMBROS_BACKUP.csv", "tabela_usuarios", "datafcgamingffxiv", dados_membros_df)
 
 # %%
-dados = pd.concat([MEMBROS_FC_DEPOIS,MEMBROS_FC_antes],ignore_index=True)
-dados.drop_duplicates(subset=["ID"],inplace=True)
-#Dataframe das pessoas que entraram da FC
-dados_entrou=dados[dados['ID'].isin(lista_entrou)]
-#Dataframe das pessoas que sairam da FC
-dados_saiu=dados[dados['ID'].isin(lista_saiu)]
+# Postagem das mensagens no Discord
+for i, row in dados_entrou.iterrows():
+    send_discord_message(WEBHOOK_ENTROU_FC, f"{row['Name']} (ID:{row['ID']}) entrou na fc.")
 
-# %%
-dados_entrou.reset_index(drop = True, inplace = True)
-dados_saiu.reset_index(drop = True, inplace = True)
-
-# %%
-#postagem das mensagens no discord
-if len(lista_entrou)>0:
-    for i in range(0,len(lista_entrou)):
-        webhook = DiscordWebhook(url=WEBHOOK_ENTROU_FC, content=str(dados_entrou["Name"][i]) +  "  (ID:"+ str(dados_entrou["ID"][i])+")  entrou na fc.")
-        response = webhook.execute()  
-
-# %%
-##postagem das mensagens no discord
-if len(lista_saiu)>0:
-    for i in range(0,len(lista_saiu)):
-        webhook = DiscordWebhook(url=WEBHOOK_SAIU_FC, content=str(dados_saiu["Name"][i]) +  "  (ID:"+ str(dados_saiu["ID"][i])+")  saiu da fc.")
-        response = webhook.execute()  
-
-# %%
-upload_s3("RAW_MEMBROS_BACKUP.csv","client","dataff",MEMBROS_FC_DEPOIS)
+for i, row in dados_saiu.iterrows():
+    send_discord_message(WEBHOOK_SAIU_FC, f"{row['Name']} (ID:{row['ID']}) saiu da fc.")
 
 
