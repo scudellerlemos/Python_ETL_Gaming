@@ -1,0 +1,5 @@
+pandas
+requests
+discord_webhook
+boto3
+bs4
