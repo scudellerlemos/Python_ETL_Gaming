@@ -65,9 +65,6 @@ def send_discord_message(url, message):
 dados_atual = dados_FC()
 dados_membros_df = pd.DataFrame(dados_atual)
 
-# %%
-dados_membros_df = pd.DataFrame(dados_membros_df)
-
 # Criação da tabela de ontem
 MEMBROS_FC_antes = read_csv_s3("RAW_MEMBROS_BACKUP.csv", "tabela_usuarios", "datafcgamingffxiv")
 
