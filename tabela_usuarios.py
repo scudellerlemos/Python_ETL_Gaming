@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 
 # %%
 # Chaves
-AWS_KEY = os.environ["AWS_KEY"]
-AWS_ACC = os.environ["AWS_ACC"]
-WEBHOOK_SAIU_FC = os.environ["WEBHOOK_SAIU_FC"]
-WEBHOOK_ENTROU_FC = os.environ["WEBHOOK_ENTROU_FC"]
+AWS_KEY = os.getenv("AWS_KEY")
+AWS_ACC = os.getenv("AWS_ACC")
+WEBHOOK_SAIU_FC = os.getenv("WEBHOOK_SAIU_FC")
+WEBHOOK_ENTROU_FC = os.getenv("WEBHOOK_ENTROU_FC")
 
 # Função para pegar JSON FILE da FC
 def dados_FC():
