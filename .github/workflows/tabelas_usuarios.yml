@@ -14,8 +14,8 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    environment: PRD  # Define o ambiente como PRD
 
     steps:
     - uses: actions/checkout@v4
