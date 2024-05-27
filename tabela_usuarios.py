@@ -89,9 +89,9 @@ upload_s3("RAW_MEMBROS_BACKUP.csv", "tabela_usuarios", "datafcgamingffxiv", dado
 # %%
 # Postagem das mensagens no Discord
 for i, row in dados_entrou.iterrows():
-    send_discord_message(WEBHOOK_ENTROU_FC, f"{row['Name']} (ID:{row['ID']}) entrou na fc.")
+    send_discord_message(WEBHOOK_ENTROU_FC, f"{row['Name']} (ID:'A DEFINIR') entrou na fc.")
 
 for i, row in dados_saiu.iterrows():
-    send_discord_message(WEBHOOK_SAIU_FC, f"{row['Name']} (ID:{row['ID']}) saiu da fc.")
+    send_discord_message(WEBHOOK_SAIU_FC, f"{row['Name']} (ID:'A DEFINIR') saiu da fc.")
 
 
